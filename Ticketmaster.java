@@ -319,16 +319,48 @@ public class Ticketmaster{
 	public static void AddBooking(Ticketmaster esql){//2
 		try{
 			List<List<String>> result = esql.executeQueryAndReturnResult("SELECT MAX(bid) FROM Bookings");
-			System.out.println(result.get(0));
+			int bid = Integer.parseInt(result.get(0).get(0))+1;
 			boolean flag = true;
-				
+			String status;
+			String bdatetime;
+			int sid;
+			int seats;
+			String email;
+			System.out.println("Show ID: ");
+			sid = Integer.parseInt(in.readLine());		
 			System.out.println("Status: ");
-			String status = in.readLine();
+			status = in.readLine();
 			System.out.println("DateTime: ");
-			String bdatetime = in.readLine();
-			System.out.println("# Seats: ");
-			//int seats = in.readLine();
-			
+			bdatetime = in.readLine();
+			while(flag) {
+				System.out.println("# Seats: ");
+				seats = Integer.parseInt(in.readLine());
+				result = esql.executeQueryAndReturnResult(String.format("SELECT seats FROM Bookings WHERE sid = %d",sid));
+				int count=0;
+				for(int i =0; i<result.size(); i++) {
+					count = count+Integer.parseInt(result.get(i).get(0));
+				}
+				count = count+seats;			
+				result = esql.executeQueryAndReturnResult(String.format("SELECT T.tseats FROM Theaters T, Plays P  WHERE P.sid = %d AND P.tid = T.tid", sid));
+				if(count < Integer.parseInt(result.get(0).get(0))) {
+					flag = false;
+				} 
+				if(flag == true) {
+					System.out.println("Not enough seats available");
+				}
+			}
+			flag = true;
+			while(flag) {
+				System.out.println("Email: ");
+				email = in.readLine();
+				System.out.println(email);
+				if(esql.executeQuery(String.format("SELECT fname FROM Users WHERE email = '%s'",email))>0) {
+					flag = false;
+				} else {
+					System.out.println("Invalid email address");
+				}
+			}
+			esql.executeUpdate();
 		}
 		catch(Exception e) {
 			e.printStackTrace();
