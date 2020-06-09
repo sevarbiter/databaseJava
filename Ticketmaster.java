@@ -317,7 +317,22 @@ public class Ticketmaster{
 	}
 	
 	public static void AddBooking(Ticketmaster esql){//2
-		//test comment	
+		try{
+			List<List<String>> result = esql.executeQueryAndReturnResult("SELECT MAX(bid) FROM Bookings");
+			System.out.println(result.get(0));
+			boolean flag = true;
+				
+			System.out.println("Status: ");
+			String status = in.readLine();
+			System.out.println("DateTime: ");
+			String bdatetime = in.readLine();
+			System.out.println("# Seats: ");
+			//int seats = in.readLine();
+			
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public static void AddMovieShowingToTheater(Ticketmaster esql){//3
