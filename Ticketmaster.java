@@ -1,7 +1,4 @@
 /*
- * Template JAVA User Interface
- * =============================
- *
  * Database Management Systems
  * Department of Computer Science &amp; Engineering
  * University of California - Riverside
@@ -23,8 +20,6 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.List;
 import java.util.ArrayList;
-import java.security.MessageDigest;
-
 
 /**
  * This class defines a simple embedded SQL utility class that is designed to
@@ -326,13 +321,12 @@ public class Ticketmaster{
 			String phone = in.readLine();
 			System.out.println("Password: ");
 			String pwd = in.readLine();
-		  MessageDigest digest = MessageDigest.getInstance("SHA-256");
-		  byte[] encodedhash = digest.digest(pwd.getBytes());
-		  esql.executeQuery(String.format("INSERT INTO USERS (email, lname, fname, phone, pwd) VALUES ('%s', '%s', '%s', '%s', '%s');", email, lname, fname, phone, encodedhash));
-	    }
-      catch( Exception e) {
-        e.printStackTrace();
-      }
+      esql.executeUpdate(String.format("INSERT INTO USERS (email, lname, fname, phone, pwd) VALUES ('%s', '%s', '%s', '%s', '%s');", email, lname, fname, phone,"7AEE99C0E48BC90FEF4C030DD7D3A867195966D452E699F97777157"));
+	    System.out.println("User Added Successfully");
+    }
+    catch( Exception e) {
+      e.printStackTrace();
+    }
   }
 	
 	public static void AddBooking(Ticketmaster esql){//2
@@ -340,7 +334,23 @@ public class Ticketmaster{
 	}
 	
 	public static void AddMovieShowingToTheater(Ticketmaster esql){//3
-		
+		try{
+			System.out.println("Email: ");
+			String email = in.readLine();
+			System.out.println("First Name: ");
+			String fname = in.readLine();
+			System.out.println("Last Name: ");
+			String lname = in.readLine();
+			System.out.println("Phone #: ");	
+			String phone = in.readLine();
+			System.out.println("Password: ");
+			String pwd = in.readLine();
+		  esql.executeQuery(String.format("INSERT INTO USERS (email, lname, fname, phone, pwd) VALUES ('%s', '%s', '%s', '%s', '%s');", email, lname, fname, phone, pwd));
+	    System.out.println("User Added Successfully");
+    }
+    catch( Exception e) {
+      e.printStackTrace();
+    }
 	}
 	
 	public static void CancelPendingBookings(Ticketmaster esql){//4
