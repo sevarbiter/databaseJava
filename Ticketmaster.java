@@ -324,8 +324,8 @@ public class Ticketmaster{
 			String status;
 			String bdatetime;
 			int sid;
-			int seats;
-			String email;
+			int seats=0;
+			String email=null;
 			System.out.println("Show ID: ");
 			sid = Integer.parseInt(in.readLine());		
 			System.out.println("Status: ");
@@ -360,7 +360,7 @@ public class Ticketmaster{
 					System.out.println("Invalid email address");
 				}
 			}
-			esql.executeUpdate();
+			esql.executeUpdate(String.format("INSERT INTO Bookings (bid, status, bdatetime, seats, sid, email) VALUES ('%d', '%s', '%s', '%d', '%d', '%s')", bid, status, bdatetime, seats, sid, email));
 		}
 		catch(Exception e) {
 			e.printStackTrace();
@@ -372,7 +372,12 @@ public class Ticketmaster{
 	}
 	
 	public static void CancelPendingBookings(Ticketmaster esql){//4
-		
+		try{
+			esql.executeUpdate("UPDATE Bookings SET status = 'Cancelled' WHERE status = 'Pending'");		
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public static void ChangeSeatsForBooking(Ticketmaster esql) throws Exception{//5
