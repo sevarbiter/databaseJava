@@ -330,7 +330,90 @@ public class Ticketmaster{
   	}
 	
 	public static void AddBooking(Ticketmaster esql){//2
-		
+		try{
+			List<List<String>> result = esql.executeQueryAndReturnResult("SELECT MAX(bid) FROM Bookings");
+			int bid = Integer.parseInt(result.get(0).get(0))+1;
+			boolean flag = true;
+			String status;
+			String bdatetime;
+			int sid;
+			int seats=0;
+			String email=null;
+			System.out.println("Show ID: ");
+			sid = Integer.parseInt(in.readLine());		
+			//System.out.println("Status: ");
+			status = "Pending";
+			System.out.println("DateTime: ");
+			bdatetime = in.readLine();
+			//Booking
+			while(flag) {
+				System.out.println("# Seats: ");
+				seats = Integer.parseInt(in.readLine());
+				result = esql.executeQueryAndReturnResult(String.format("SELECT seats FROM Bookings WHERE sid = %d",sid));
+				int count=0;
+				for(int i =0; i<result.size(); i++) {
+					count = count+Integer.parseInt(result.get(i).get(0));
+				}
+				count = count+seats;			
+				result = esql.executeQueryAndReturnResult(String.format("SELECT T.tseats FROM Theaters T, Plays P  WHERE P.sid = %d AND P.tid = T.tid", sid));
+				if(count < Integer.parseInt(result.get(0).get(0))) {
+					flag = false;
+				} 
+				if(flag == true) {
+					System.out.println("Not enough seats available");
+				}
+			}
+			flag = true;
+			while(flag) {
+				System.out.println("Email: ");
+				email = in.readLine();
+				System.out.println(email);
+				if(esql.executeQuery(String.format("SELECT fname FROM Users WHERE email = '%s'",email))>0) {
+					flag = false;
+				} else {
+					System.out.println("Invalid email address");
+				}
+			}
+			esql.executeUpdate(String.format("INSERT INTO Bookings (bid, status, bdatetime, seats, sid, email) VALUES ('%d', '%s', '%s', '%d', '%d', '%s')", bid, status, bdatetime, seats, sid, email));
+			//ShowSeats
+			int cost=0;			
+			System.out.println(String.format("Available seats for Show %d are: ",sid));
+			result = esql.executeQueryAndReturnResult(String.format("SELECT sno FROM CinemaSeats S, ShowSeats W WHERE S.tid = (SELECT T.tid FROM Theaters T, Plays P WHERE P.sid = '%d' AND P.tid = T.tid) AND S.csid = W.csid AND W.bid IS NULL", sid));
+			System.out.println(result);
+			int i =0;
+			do {
+				String select;
+				String selection;
+				System.out.println("Which Seat would you like: ");
+				i++;
+				select = in.readLine();
+				selection = esql.executeQueryAndReturnResult(String.format("SELECT S.csid FROM CinemaSeats S, ShowSeats W WHERE S.tid = (SELECT T.tid FROM Theaters T, Plays P WHERE P.sid = '%d' AND P.tid = T.tid) AND S.csid = W.csid AND W.bid IS NULL AND sno = '%s'", sid, select)).get(0).get(0);
+				esql.executeUpdate(String.format("UPDATE ShowSeats SET bid = '%d' WHERE csid = '%s'", bid, selection));
+				cost = cost+Integer.parseInt(esql.executeQueryAndReturnResult(String.format("SELECT price FROM ShowSeats WHERE csid = '%s'",selection)).get(0).get(0));
+			} while(i<seats);
+			System.out.println(String.format("Total cost is: %d",cost));
+			//System.out.println(result.get(0));
+			//Payment
+			result = esql.executeQueryAndReturnResult("SELECT MAX(pid) FROM Payments");
+			int pid = Integer.parseInt(result.get(0).get(0))+1;
+			System.out.println("Payment Method: ");
+			String method = in.readLine();
+			System.out.println("Would you like to pay?(yes/no)");
+			String response = in.readLine();
+			
+			int amount = cost;
+			int min = 10000000;
+			int max = 99999999;
+			int trid = (int)Math.random() * (max - min + 1) + min;
+			//Write to db
+			if(response.equals("yes")) {
+				esql.executeUpdate(String.format("UPDATE Bookings SET status = 'Paid' WHERE bid = '%d'",bid));
+				esql.executeUpdate(String.format("INSERT INTO Payments (pid, bid, pmethod, pdatetime, amount, trid) VALUES ('%d', '%d', '%s', '%s', '%d', '%d')", pid, bid, method, bdatetime, amount, trid));
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public static void AddMovieShowingToTheater(Ticketmaster esql){//3
@@ -375,28 +458,96 @@ public class Ticketmaster{
 	}
 	
 	public static void CancelPendingBookings(Ticketmaster esql){//4
-		
+		try{
+			List<List<String>> result = esql.executeQueryAndReturnResult("SELECT S.csid FROM ShowSeats S, Bookings B WHERE B.status='Pending' AND B.bid = S.bid");
+			for(int i=0; i<result.size(); i++) {
+				esql.executeUpdate(String.format("UPDATE ShowSeats SET bid = '' WHERE bid = '%s'", result.get(i).get(0)));
+			}
+			esql.executeUpdate("UPDATE Bookings SET status = 'Cancelled' WHERE status = 'Pending'");		
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public static void ChangeSeatsForBooking(Ticketmaster esql) throws Exception{//5
-	
+		try{
+			System.out.println("Enter your booking ID: ");
+			String bid = in.readLine();
+			String sid = esql.executeQueryAndReturnResult(String.format("SELECT sid FROM Bookings WHERE bid = '%s'",bid)).get(0).get(0);
+			System.out.println("Current Seat(s) for this booking are: ");
+			List<List<String>> result = esql.executeQueryAndReturnResult(String.format("SELECT csid FROM ShowSeats WHERE bid = '%s'", bid));
+			//System.out.println(result);
+			for(int i =0; i<result.size(); i++) {
+				System.out.println(esql.executeQueryAndReturnResult(String.format("SELECT sno FROM CinemaSeats WHERE csid = '%s'",result.get(i).get(0))).get(0).get(0));
+				System.out.println("Price: ");
+				String price = esql.executeQueryAndReturnResult(String.format("SELECT price FROM ShowSeats WHERE csid = '%s'",result.get(i).get(0))).get(0).get(0);
+				System.out.println(price);
+				System.out.println("Available Exchanges: ");
+				List<List<String>> posible = esql.executeQueryAndReturnResult(String.format("SELECT csid FROM ShowSeats WHERE price = '%s' AND sid = '%s' AND bid IS NULL", price, sid));
+				for(int j=0; j<posible.size(); j++) {
+					System.out.println(esql.executeQueryAndReturnResult(String.format("SELECT sno FROM CinemaSeats WHERE csid = '%s'", posible.get(i).get(0))));
+				}
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public static void RemovePayment(Ticketmaster esql){//6
-		
+		try{
+			System.out.println("Enter booking ID: ");
+			String bid = in.readLine();
+			
+			esql.executeUpdate(String.format("UPDATE ShowSeats SET bid = '' WHERE bid = '%s'", bid));
+			esql.executeUpdate(String.format("UPDATE Bookings SET status = 'Cancelled' WHERE bid = '%s'",bid));
+			esql.executeUpdate(String.format("DELETE FROM Payments WHERE bid = '%s'",bid));
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}		
 	}
 	
 	public static void ClearCancelledBookings(Ticketmaster esql){//7
-		
+		try{
+			esql.executeUpdate("DELETE FROM Bookings WHERE status = 'Cancelled'");
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}	
 	}
 	
 	public static void RemoveShowsOnDate(Ticketmaster esql){//8
-		
+		try{
+			System.out.println("Which Cinema ID: ");
+			String cid = in.readLine();
+			System.out.println("What Date(#/#/##): ");
+			String date = in.readLine();
+			List<List<String>> result = esql.executeQueryAndReturnResult(String.format("SELECT S.sid FROM Shows S, Theaters T, Plays P WHERE S.sid = P.sid AND P.tid = T.tid AND T.cid = '%s' AND S.sdate = '%s'",cid, date));
+			System.out.println(result);
+			for(int i=0; i<result.size(); i++) {
+				esql.executeUpdate(String.format("DELETE FROM Plays WHERE sid = '%s'", result.get(i).get(0)));
+				esql.executeUpdate(String.format("DELETE FROM ShowSeats WHERE sid = '%s'", result.get(i).get(0)));
+				esql.executeUpdate(String.format("DELETE FROM Shows WHERE sid = '%s'", result.get(i).get(0)));
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public static void ListTheatersPlayingShow(Ticketmaster esql){//9
 		//
-		
+		try {
+			System.out.println("Which show would you like to search?");
+			String sid = in.readLine();
+			List<List<String>> result = esql.executeQueryAndReturnResult(String.format("SELECT T.tname FROM Theaters T, Plays P Where P.sid = '%s' AND T.tid = P.tid",sid));
+			System.out.println(result);			
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public static void ListShowsStartingOnTimeAndDate(Ticketmaster esql){//10
