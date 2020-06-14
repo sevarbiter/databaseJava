@@ -311,17 +311,17 @@ public class Ticketmaster{
 	
 	public static void AddUser(Ticketmaster esql){//1
 		try{
-			System.out.println("Email: ");
+			System.out.printf("Email: ");
 			String email = in.readLine();
-			System.out.println("First Name: ");
+			System.out.printf("First Name: ");
 			String fname = in.readLine();
-			System.out.println("Last Name: ");
+			System.out.printf("Last Name: ");
 			String lname = in.readLine();
-			System.out.println("Phone #: ");	
+			System.out.printf("Phone #: ");	
 			String phone = in.readLine();
-			System.out.println("Password: ");
+			System.out.printf("Password: ");
 			String pwd = in.readLine();
-      esql.executeUpdate(String.format("INSERT INTO USERS (email, lname, fname, phone, pwd) VALUES ('%s', '%s', '%s', '%s', '%s');", email, lname, fname, phone,"7AEE99C0E48BC90FEF4C030DD7D3A867195966D452E699F97777157"));
+      esql.executeUpdate(String.format("INSERT INTO users VALUES ('%s', '%s', '%s', '%s', '%s');", email, lname, fname, phone,"7AEE99C0E48BC90FEF4C030DD7D3A867195966D452E699F97777157"));
 	    System.out.println("User Added Successfully");
     }
     catch( Exception e) {
@@ -334,19 +334,40 @@ public class Ticketmaster{
 	}
 	
 	public static void AddMovieShowingToTheater(Ticketmaster esql){//3
-		try{
-			System.out.println("Email: ");
-			String email = in.readLine();
-			System.out.println("First Name: ");
-			String fname = in.readLine();
-			System.out.println("Last Name: ");
-			String lname = in.readLine();
-			System.out.println("Phone #: ");	
-			String phone = in.readLine();
-			System.out.println("Password: ");
-			String pwd = in.readLine();
-		  esql.executeQuery(String.format("INSERT INTO USERS (email, lname, fname, phone, pwd) VALUES ('%s', '%s', '%s', '%s', '%s');", email, lname, fname, phone, pwd));
-	    System.out.println("User Added Successfully");
+    try{
+			int newMvid = Integer.parseInt(esql.executeQueryAndReturnResult("SELECT MAX(mvid) FROM movies").get(0).get(0))+ 1;
+      String mvid = Integer.toString(newMvid);
+      System.out.println("==========Movie Information==========");
+      System.out.printf("Title: ");
+			String title = in.readLine();
+			System.out.printf("Release Date (YYYY-MM-DD): ");
+			String rdate = in.readLine();
+			System.out.printf("Country: ");
+			String country = in.readLine();
+			System.out.printf("Description: ");	
+			String description = in.readLine();
+			System.out.printf("Duration (in seconds): ");
+			String duration = in.readLine();
+			System.out.printf("Language (eg: EN, DE): ");
+			String lang = in.readLine();
+			System.out.printf("Genre: ");
+			String genre = in.readLine();
+      esql.executeUpdate(String.format("INSERT INTO movies VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s');", mvid, title, rdate, country, description, duration, lang, genre));
+			int newSid = Integer.parseInt(esql.executeQueryAndReturnResult("SELECT MAX(sid) FROM shows").get(0).get(0))+ 1;
+      String sid = Integer.toString(newSid);
+      System.out.println("==========Show  Information==========");
+			System.out.printf("Date (YYYY-MM-DD): ");
+			String sdate = in.readLine();
+			System.out.printf("Start Time (HH:MM:SS): ");
+			String sttime = in.readLine();
+			System.out.printf("End Time (HH:MM:SS): ");
+			String edtime = in.readLine();
+      esql.executeUpdate(String.format("INSERT INTO shows VALUES ('%s', '%s', '%s', '%s', '%s');", sid, mvid, sdate, sttime, edtime)); 
+      System.out.println("==========Play  Information==========");
+      System.out.printf("Theater ID: ");
+      String tid = in.readLine(); 
+      esql.executeUpdate(String.format("INSERT INTO plays VALUES ('%s', '%s');", sid, tid));
+	    System.out.println("Added Movie Showing to Theater Successfully");
     }
     catch( Exception e) {
       e.printStackTrace();
@@ -358,7 +379,24 @@ public class Ticketmaster{
 	}
 	
 	public static void ChangeSeatsForBooking(Ticketmaster esql) throws Exception{//5
-		
+	  try{
+      System.out.println("==========Booking  Information==========");
+      System.out.printf("Booking ID: ");
+			String bid = in.readLine();
+      System.out.printf("Show ID: ");
+      String sid = in.readLine();
+			List<List<String>> results = esql.executeQueryAndReturnResult(String.format("SELECT S.csid, S.price, C.sno FROM showseats S, cinemaseats C where S.bid = '%s' and S.sid = '%s' and C.csid = S.csid", bid, sid));
+      for( int i = 0; i < results.size(); i++){
+        System.out.println("Available Seats:");
+        //NOT SURE ABOUT THIS
+        esql.executeQueryAndPrintResult(String.format("SELECT C.sno FROM showseats S, cinemaseats C where S.price = '%s' and S.sid = '%s' and S.bid IS NULL and C.csid = S.csid", results.get(1), sid)); 
+        System.out.printf("Where do you want to move seat %s to?: ", results.get(2));
+        //To BE COMPLETED
+      }
+    }
+    catch(Exception e){
+      e.printStackTrace();
+    }
 	}
 	
 	public static void RemovePayment(Ticketmaster esql){//6
