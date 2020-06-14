@@ -366,11 +366,6 @@ public class Ticketmaster{
 			int cost=0;			
 			System.out.println(String.format("Available seats for Show %d are: ",sid));
 			result = esql.executeQueryAndReturnResult(String.format("SELECT sno FROM CinemaSeats S, ShowSeats W WHERE S.tid = (SELECT T.tid FROM Theaters T, Plays P WHERE P.sid = '%d' AND P.tid = T.tid) AND S.csid = W.csid AND W.bid IS NULL", sid));
-			//result = esql.executeQueryAndReturnResult(String.format("SELECT csid FROM ShowSeats WHERE sid = '%d' AND bid IS NULL", sid));
-			//for(int i=0; i<result.size(); i++) {
-			//System.out.println(esql.executeQueryAndReturnResult(String.format("SELECT C.sno FROM CinemaSeats C WHERE C.csid = '%s' AND C.csid = (SELECT csid FROM ShowSeats WHERE sid = '%d' AND bid IS NULL)",result.get(0).get(0), sid)));
-				//System.out.println(esql.executeQueryAndReturnResult("SELECT sno FROM CinemaSeats WHERE 
-			//}
 			System.out.println(result);
 			int i =0;
 			do {
@@ -386,7 +381,7 @@ public class Ticketmaster{
 			System.out.println(String.format("Total cost is: %d",cost));
 			//System.out.println(result.get(0));
 			//Payment
-		result = esql.executeQueryAndReturnResult("SELECT MAX(pid) FROM Payments");
+			result = esql.executeQueryAndReturnResult("SELECT MAX(pid) FROM Payments");
 			int pid = Integer.parseInt(result.get(0).get(0))+1;
 			System.out.println("Payment Method: ");
 			String method = in.readLine();
@@ -414,6 +409,10 @@ public class Ticketmaster{
 	
 	public static void CancelPendingBookings(Ticketmaster esql){//4
 		try{
+			List<List<String>> result = esql.executeQueryAndReturnResult("SELECT S.csid FROM ShowSeats S, Bookings B WHERE B.status='Pending' AND B.bid = S.bid");
+			for(int i=0; i<result.size(); i++) {
+				esql.executeUpdate(String.format("UPDATE ShowSeats SET bid = '' WHERE bid = '%s'", result.get(i).get(0)));
+			}
 			esql.executeUpdate("UPDATE Bookings SET status = 'Cancelled' WHERE status = 'Pending'");		
 		}
 		catch(Exception e) {
@@ -422,15 +421,42 @@ public class Ticketmaster{
 	}
 	
 	public static void ChangeSeatsForBooking(Ticketmaster esql) throws Exception{//5
-		
+		try{
+			System.out.println("Enter your booking ID: ");
+			String bid = in.readLine();
+			System.out.println("Current Seat(s) for this booking are: ");
+			List<List<String>> result = esql.executeQueryAndReturnResult(String.format("SELECT csid FROM ShowSeats WHERE bid = '%s'", bid));
+			for(int i =0; i<result.size(); i++) {
+				System.out.println(esql.executeQueryAndReturnResult(String.format("SELECT sno FROM CinemaSeats WHERE csid = '%s'",result.get(i).get(0))));
+				
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public static void RemovePayment(Ticketmaster esql){//6
-		
+		try{
+			System.out.println("Enter booking ID: ");
+			String bid = in.readLine();
+			
+			esql.executeUpdate(String.format("UPDATE ShowSeats SET bid = '' WHERE bid = '%s'", bid));
+			esql.executeUpdate(String.format("UPDATE Bookings SET status = 'Cancelled' WHERE bid = '%s'",bid));
+			esql.executeUpdate(String.format("DELETE FROM Payments WHERE bid = '%s'",bid));
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}		
 	}
 	
 	public static void ClearCancelledBookings(Ticketmaster esql){//7
-		
+		try{
+			esql.executeUpdate("DELETE FROM Bookings WHERE status = 'Cancelled'");
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}	
 	}
 	
 	public static void RemoveShowsOnDate(Ticketmaster esql){//8
