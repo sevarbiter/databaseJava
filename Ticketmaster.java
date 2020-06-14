@@ -379,24 +379,7 @@ public class Ticketmaster{
 	}
 	
 	public static void ChangeSeatsForBooking(Ticketmaster esql) throws Exception{//5
-		try{
-      			System.out.println("==========Booking  Information==========");
-      			System.out.printf("Booking ID: ");
-			String bid = in.readLine();
-      			System.out.printf("Show ID: ");
-      			String sid = in.readLine();
-			List<List<String>> results = esql.executeQueryAndReturnResult(String.format("SELECT S.csid, S.price, C.sno FROM showseats S, cinemaseats C where S.bid = '%s' and S.sid = '%s' and C.csid = S.csid", bid, sid));
-      			for( int i = 0; i < results.size(); i++){
-        			System.out.println("Available Seats:");
-        			//NOT SURE ABOUT THIS
-        			esql.executeQueryAndPrintResult(String.format("SELECT C.sno FROM showseats S, cinemaseats C where S.price = '%s' and S.sid = '%s' and S.bid IS NULL and C.csid = S.csid", results.get(1), sid)); 
-        			System.out.printf("Where do you want to move seat %s to?: ", results.get(2));
-        			//To BE COMPLETED
-      			}
-    		}
-    		catch(Exception e){
-      			e.printStackTrace();
-    		}
+	
 	}
 	
 	public static void RemovePayment(Ticketmaster esql){//6
@@ -471,7 +454,14 @@ public class Ticketmaster{
 
 	public static void ListBookingInfoForUser(Ticketmaster esql){//14
 		//
-		
+		try{
+			System.out.printf("Email: ");
+			String email = in.readLine();
+			esql.executeQueryAndPrintResult(String.format("SELECT m.title, s.sdate, s.sttime, t.tname, cs.sno FROM bookings b, movies m, shows s, theaters t, cinemaseats cs, plays p WHERE b.email = '%s' and b.sid = s.sid and m.mvid = s.mvid and p.sid = s.sid and p.tid = t.tid and cs.tid = t.tid;", email));
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 	
 }
