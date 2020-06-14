@@ -469,7 +469,22 @@ public class Ticketmaster{
 	}
 	
 	public static void RemoveShowsOnDate(Ticketmaster esql){//8
-		
+		try{
+			System.out.println("Which Cinema ID: ");
+			String cid = in.readLine();
+			System.out.println("What Date(#/#/##): ");
+			String date = in.readLine();
+			List<List<String>> result = esql.executeQueryAndReturnResult(String.format("SELECT S.sid FROM Shows S, Theaters T, Plays P WHERE S.sid = P.sid AND P.tid = T.tid AND T.cid = '%s' AND S.sdate = '%s'",cid, date));
+			System.out.println(result);
+			for(int i=0; i<result.size(); i++) {
+				esql.executeUpdate(String.format("DELETE FROM Plays WHERE sid = '%s'", result.get(i).get(0)));
+				esql.executeUpdate(String.format("DELETE FROM ShowSeats WHERE sid = '%s'", result.get(i).get(0)));
+				esql.executeUpdate(String.format("DELETE FROM Shows WHERE sid = '%s'", result.get(i).get(0)));
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public static void ListTheatersPlayingShow(Ticketmaster esql){//9
