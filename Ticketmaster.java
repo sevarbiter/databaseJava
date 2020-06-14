@@ -321,24 +321,24 @@ public class Ticketmaster{
 			String phone = in.readLine();
 			System.out.printf("Password: ");
 			String pwd = in.readLine();
-      esql.executeUpdate(String.format("INSERT INTO users VALUES ('%s', '%s', '%s', '%s', '%s');", email, lname, fname, phone,"7AEE99C0E48BC90FEF4C030DD7D3A867195966D452E699F97777157"));
-	    System.out.println("User Added Successfully");
-    }
-    catch( Exception e) {
-      e.printStackTrace();
-    }
-  }
+			esql.executeUpdate(String.format("INSERT INTO users VALUES ('%s', '%s', '%s', '%s', '%s');", email, lname, fname, phone,"7AEE99C0E48BC90FEF4C030DD7D3A867195966D452E699F97777157"));
+			System.out.println("User Added Successfully");
+    		}
+    		catch( Exception e) {
+      			e.printStackTrace();
+    		}
+  	}
 	
 	public static void AddBooking(Ticketmaster esql){//2
 		
 	}
 	
 	public static void AddMovieShowingToTheater(Ticketmaster esql){//3
-    try{
+		try{
 			int newMvid = Integer.parseInt(esql.executeQueryAndReturnResult("SELECT MAX(mvid) FROM movies").get(0).get(0))+ 1;
-      String mvid = Integer.toString(newMvid);
-      System.out.println("==========Movie Information==========");
-      System.out.printf("Title: ");
+      			String mvid = Integer.toString(newMvid);
+      			System.out.println("==========Movie Information==========");
+      			System.out.printf("Title: ");
 			String title = in.readLine();
 			System.out.printf("Release Date (YYYY-MM-DD): ");
 			String rdate = in.readLine();
@@ -352,26 +352,26 @@ public class Ticketmaster{
 			String lang = in.readLine();
 			System.out.printf("Genre: ");
 			String genre = in.readLine();
-      esql.executeUpdate(String.format("INSERT INTO movies VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s');", mvid, title, rdate, country, description, duration, lang, genre));
+      			esql.executeUpdate(String.format("INSERT INTO movies VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s');", mvid, title, rdate, country, description, duration, lang, genre));
 			int newSid = Integer.parseInt(esql.executeQueryAndReturnResult("SELECT MAX(sid) FROM shows").get(0).get(0))+ 1;
-      String sid = Integer.toString(newSid);
-      System.out.println("==========Show  Information==========");
+      			String sid = Integer.toString(newSid);
+      			System.out.println("==========Show  Information==========");
 			System.out.printf("Date (YYYY-MM-DD): ");
 			String sdate = in.readLine();
 			System.out.printf("Start Time (HH:MM:SS): ");
 			String sttime = in.readLine();
 			System.out.printf("End Time (HH:MM:SS): ");
 			String edtime = in.readLine();
-      esql.executeUpdate(String.format("INSERT INTO shows VALUES ('%s', '%s', '%s', '%s', '%s');", sid, mvid, sdate, sttime, edtime)); 
-      System.out.println("==========Play  Information==========");
-      System.out.printf("Theater ID: ");
-      String tid = in.readLine(); 
-      esql.executeUpdate(String.format("INSERT INTO plays VALUES ('%s', '%s');", sid, tid));
-	    System.out.println("Added Movie Showing to Theater Successfully");
-    }
-    catch( Exception e) {
-      e.printStackTrace();
-    }
+      			esql.executeUpdate(String.format("INSERT INTO shows VALUES ('%s', '%s', '%s', '%s', '%s');", sid, mvid, sdate, sttime, edtime)); 
+      			System.out.println("==========Play  Information==========");
+      			System.out.printf("Theater ID: ");
+      			String tid = in.readLine(); 
+      			esql.executeUpdate(String.format("INSERT INTO plays VALUES ('%s', '%s');", sid, tid));
+	    		System.out.println("Added Movie Showing to Theater Successfully");
+    		}
+    		catch( Exception e) {
+      			e.printStackTrace();
+    		}
 	}
 	
 	public static void CancelPendingBookings(Ticketmaster esql){//4
@@ -379,24 +379,24 @@ public class Ticketmaster{
 	}
 	
 	public static void ChangeSeatsForBooking(Ticketmaster esql) throws Exception{//5
-	  try{
-      System.out.println("==========Booking  Information==========");
-      System.out.printf("Booking ID: ");
+		try{
+      			System.out.println("==========Booking  Information==========");
+      			System.out.printf("Booking ID: ");
 			String bid = in.readLine();
-      System.out.printf("Show ID: ");
-      String sid = in.readLine();
+      			System.out.printf("Show ID: ");
+      			String sid = in.readLine();
 			List<List<String>> results = esql.executeQueryAndReturnResult(String.format("SELECT S.csid, S.price, C.sno FROM showseats S, cinemaseats C where S.bid = '%s' and S.sid = '%s' and C.csid = S.csid", bid, sid));
-      for( int i = 0; i < results.size(); i++){
-        System.out.println("Available Seats:");
-        //NOT SURE ABOUT THIS
-        esql.executeQueryAndPrintResult(String.format("SELECT C.sno FROM showseats S, cinemaseats C where S.price = '%s' and S.sid = '%s' and S.bid IS NULL and C.csid = S.csid", results.get(1), sid)); 
-        System.out.printf("Where do you want to move seat %s to?: ", results.get(2));
-        //To BE COMPLETED
-      }
-    }
-    catch(Exception e){
-      e.printStackTrace();
-    }
+      			for( int i = 0; i < results.size(); i++){
+        			System.out.println("Available Seats:");
+        			//NOT SURE ABOUT THIS
+        			esql.executeQueryAndPrintResult(String.format("SELECT C.sno FROM showseats S, cinemaseats C where S.price = '%s' and S.sid = '%s' and S.bid IS NULL and C.csid = S.csid", results.get(1), sid)); 
+        			System.out.printf("Where do you want to move seat %s to?: ", results.get(2));
+        			//To BE COMPLETED
+      			}
+    		}
+    		catch(Exception e){
+      			e.printStackTrace();
+    		}
 	}
 	
 	public static void RemovePayment(Ticketmaster esql){//6
@@ -418,22 +418,55 @@ public class Ticketmaster{
 	
 	public static void ListShowsStartingOnTimeAndDate(Ticketmaster esql){//10
 		//
-		
+		try{
+			System.out.printf("Date (YYYY-MM-DD): ");
+			String sdate = in.readLine();
+			System.out.printf("Start Time (HH:MM:SS): ");
+			String sttime = in.readLine();
+			esql.executeQueryAndPrintResult(String.format("SELECT * FROM shows where sdate = '%s' and sttime = '%s';", sdate, sttime));
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}	
 	}
 
 	public static void ListMovieTitlesContainingLoveReleasedAfter2010(Ticketmaster esql){//11
 		//
-		
+		try{
+			esql.executeQueryAndPrintResult("SELECT * FROM movies WHERE LOWER(title) LIKE '%love%' and rdate >=  '2011-01-01';");
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 
 	public static void ListUsersWithPendingBooking(Ticketmaster esql){//12
 		//
-		
+		try{
+			esql.executeQueryAndPrintResult("SELECT u.* FROM bookings b, users u WHERE b.status = 'Pending' and u.email = b.email;");
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 
 	public static void ListMovieAndShowInfoAtCinemaInDateRange(Ticketmaster esql){//13
 		//
-		
+		try{
+
+			System.out.printf("Movie ID: ");
+			String mid = in.readLine();
+			System.out.printf("Cinema ID: ");
+			String cid = in.readLine();	
+			System.out.printf("Start Date (YYYY-MM-DD): ");
+			String startDate = in.readLine();
+			System.out.printf("End Date (YYYY-MM-DD): ");
+			String endDate = in.readLine();	
+			esql.executeQueryAndPrintResult(String.format("SELECT m.title, m.duration, s.sdate, s.sttime FROM movies m, shows s, cinemas c WHERE c.cid = '%s' and m.mvid = '%s' and s.sdate BETWEEN '%s' and '%s';", cid, mid, startDate, endDate));
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 
 	public static void ListBookingInfoForUser(Ticketmaster esql){//14
