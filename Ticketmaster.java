@@ -424,11 +424,20 @@ public class Ticketmaster{
 		try{
 			System.out.println("Enter your booking ID: ");
 			String bid = in.readLine();
+			String sid = esql.executeQueryAndReturnResult(String.format("SELECT sid FROM Bookings WHERE bid = '%s'",bid)).get(0).get(0);
 			System.out.println("Current Seat(s) for this booking are: ");
 			List<List<String>> result = esql.executeQueryAndReturnResult(String.format("SELECT csid FROM ShowSeats WHERE bid = '%s'", bid));
+			//System.out.println(result);
 			for(int i =0; i<result.size(); i++) {
-				System.out.println(esql.executeQueryAndReturnResult(String.format("SELECT sno FROM CinemaSeats WHERE csid = '%s'",result.get(i).get(0))));
-				
+				System.out.println(esql.executeQueryAndReturnResult(String.format("SELECT sno FROM CinemaSeats WHERE csid = '%s'",result.get(i).get(0))).get(0).get(0));
+				System.out.println("Price: ");
+				String price = esql.executeQueryAndReturnResult(String.format("SELECT price FROM ShowSeats WHERE csid = '%s'",result.get(i).get(0))).get(0).get(0);
+				System.out.println(price);
+				System.out.println("Available Exchanges: ");
+				List<List<String>> posible = esql.executeQueryAndReturnResult(String.format("SELECT csid FROM ShowSeats WHERE price = '%s' AND sid = '%s' AND bid IS NULL", price, sid));
+				for(int j=0; j<posible.size(); j++) {
+					System.out.println(esql.executeQueryAndReturnResult(String.format("SELECT sno FROM CinemaSeats WHERE csid = '%s'", posible.get(i).get(0))));
+				}
 			}
 		}
 		catch(Exception e) {
