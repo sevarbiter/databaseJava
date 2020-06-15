@@ -378,8 +378,12 @@ public class Ticketmaster{
 			//ShowSeats
 			int cost=0;			
 			System.out.println(String.format("Available seats for Show %d are: ",sid));
-			result = esql.executeQueryAndReturnResult(String.format("SELECT sno FROM CinemaSeats S, ShowSeats W WHERE S.tid = (SELECT T.tid FROM Theaters T, Plays P WHERE P.sid = '%d' AND P.tid = T.tid) AND S.csid = W.csid AND W.bid IS NULL", sid));
+			String tid = esql.executeQueryAndReturnResult(String.format("SELECT tid FROM Plays Where sid = '%d'", sid)).get(0).get(0);
+			result = esql.executeQueryAndReturnResult(String.format("SELECT C.sno FROM CinemaSeats C, ShowSeats S WHERE C.tid = '%s' AND C.csid = S.csid AND S.bid IS NULL",tid));
 			System.out.println(result);
+			if(result.size() == 0) {
+				return;
+			}
 			int i =0;
 			do {
 				String select;
@@ -387,7 +391,8 @@ public class Ticketmaster{
 				System.out.println("Which Seat would you like: ");
 				i++;
 				select = in.readLine();
-				selection = esql.executeQueryAndReturnResult(String.format("SELECT S.csid FROM CinemaSeats S, ShowSeats W WHERE S.tid = (SELECT T.tid FROM Theaters T, Plays P WHERE P.sid = '%d' AND P.tid = T.tid) AND S.csid = W.csid AND W.bid IS NULL AND sno = '%s'", sid, select)).get(0).get(0);
+				selection = esql.executeQueryAndReturnResult(String.format("SELECT S.csid FROM CinemaSeats C, ShowSeats S WHERE C.sno = '%s' AND C.tid = '%s' AND C.csid = S.csid",select, tid)).get(0).get(0);
+				System.out.println(selection);
 				esql.executeUpdate(String.format("UPDATE ShowSeats SET bid = '%d' WHERE csid = '%s'", bid, selection));
 				cost = cost+Integer.parseInt(esql.executeQueryAndReturnResult(String.format("SELECT price FROM ShowSeats WHERE csid = '%s'",selection)).get(0).get(0));
 			} while(i<seats);
